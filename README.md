@@ -1,3 +1,7 @@
+## 🚀 Live App
+
+[![Open App](https://img.shields.io/badge/🚀%20OPEN%20APP-College%20Event%20Management%20System-brightgreen?style=for-the-badge)](https://tanmayzade44.github.io/College_Event_Management_System/)
+
 # College Event Management System
 
 A DBMS mini-project for managing college events. This repository contains the frontend application, SQL/DBMS project documents, ER diagrams, screenshots, and project documentation.
