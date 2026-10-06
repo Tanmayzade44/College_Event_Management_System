@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>College Event Management System</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,Helvetica,sans-serif;background:#f4f7fb;color:#1f2937}
+header{background:linear-gradient(135deg,#123c69,#176b87);color:white;padding:22px 35px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 3px 12px #0002}
+header h1{font-size:25px}
+header p{margin-top:5px;color:#dbeafe}
+.container{display:flex;min-height:calc(100vh - 88px)}
+.sidebar{width:230px;background:#102a43;color:white;padding:20px 12px}
+.sidebar button{width:100%;padding:13px 15px;margin:5px 0;border:0;border-radius:8px;background:transparent;color:#dbeafe;text-align:left;font-size:15px;cursor:pointer}
+.sidebar button:hover,.sidebar button.active{background:#176b87;color:white}
+.main{flex:1;padding:28px;overflow:auto}
+.page{display:none}.page.active{display:block}
+.title{font-size:27px;margin-bottom:6px}.subtitle{color:#64748b;margin-bottom:22px}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:25px}
+.card{background:white;border-radius:12px;padding:20px;box-shadow:0 3px 14px #0000000d;border-left:5px solid #176b87}
+.card h3{font-size:14px;color:#64748b}.card strong{font-size:30px;display:block;margin-top:8px}
+.panel{background:white;border-radius:12px;padding:22px;margin-bottom:22px;box-shadow:0 3px 14px #0000000d}
+.panel h2{font-size:19px;margin-bottom:17px}
+.form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+label{font-size:13px;font-weight:bold;color:#475569;display:block;margin-bottom:6px}
+input,select{width:100%;padding:11px;border:1px solid #cbd5e1;border-radius:7px;font-size:14px}
+input:focus,select:focus{outline:2px solid #93c5fd;border-color:#176b87}
+.actions{display:flex;gap:9px;margin-top:16px;flex-wrap:wrap}
+.btn{border:0;padding:10px 16px;border-radius:7px;cursor:pointer;font-weight:bold}
+.primary{background:#176b87;color:white}.secondary{background:#e2e8f0;color:#334155}
+.danger{background:#dc2626;color:white}.success{background:#15803d;color:white}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{background:#eaf2f8;color:#123c69;text-align:left;padding:12px}
+td{padding:11px;border-bottom:1px solid #e2e8f0}
+tr:hover td{background:#f8fafc}
+.badge{padding:5px 9px;border-radius:20px;font-size:12px;font-weight:bold}
+.present{background:#dcfce7;color:#166534}.absent{background:#fee2e2;color:#991b1b}.pending{background:#fef3c7;color:#92400e}
+.search{max-width:300px;margin-bottom:14px}
+.notice{padding:12px;border-radius:8px;background:#eff6ff;color:#1e40af;margin-bottom:18px}
+footer{text-align:center;color:#64748b;font-size:13px;padding:20px}
+@media(max-width:900px){.cards{grid-template-columns:repeat(2,1fr)}.sidebar{width:190px}}
+@media(max-width:650px){.container{display:block}.sidebar{width:100%;display:flex;overflow:auto}.sidebar button{min-width:150px}.main{padding:16px}.form-grid{grid-template-columns:1fr}.cards{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>College Event Management System</h1>
+    <p>DBMS Mini Project • MySQL</p>
+  </div>
+  <div>Admin Dashboard</div>
+</header>
+
+<div class="container">
+<aside class="sidebar">
+  <button class="active" onclick="showPage('dashboard',this)">🏠 Dashboard</button>
+  <button onclick="showPage('students',this)">👨‍🎓 Students</button>
+  <button onclick="showPage('organizers',this)">👥 Organizers</button>
+  <button onclick="showPage('events',this)">📅 Events</button>
+  <button onclick="showPage('registrations',this)">📝 Registrations</button>
+  <button onclick="showPage('attendance',this)">✅ Attendance</button>
+  <button onclick="showPage('crud',this)">⚙️ Student CRUD</button>
+</aside>
+
+<main class="main">
+
+<section id="dashboard" class="page active">
+  <h1 class="title">Dashboard</h1>
+  <p class="subtitle">College Event Management System overview</p>
+  <div class="cards">
+    <div class="card"><h3>Total Students</h3><strong id="studentCount">5</strong></div>
+    <div class="card"><h3>Total Events</h3><strong id="eventCount">4</strong></div>
+    <div class="card"><h3>Registrations</h3><strong id="registrationCount">5</strong></div>
+    <div class="card"><h3>Present Attendance</h3><strong id="presentCount">4</strong></div>
+  </div>
+  <div class="panel">
+    <h2>Upcoming Events</h2>
+    <table><thead><tr><th>ID</th><th>Event</th><th>Date</th><th>Venue</th><th>Seats</th></tr></thead>
+    <tbody id="dashboardEvents"></tbody></table>
+  </div>
+</section>
+
+<section id="students" class="page">
+  <h1 class="title">Students</h1><p class="subtitle">Student records from the Student table</p>
+  <div class="panel">
+    <input class="search" id="studentSearch" onkeyup="filterTable('studentTable','studentSearch')" placeholder="Search students...">
+    <table id="studentTable"><thead><tr><th>ID</th><th>Name</th><th>Branch</th><th>Year</th><th>Email</th></tr></thead>
+    <tbody id="studentBody"></tbody></table>
+  </div>
+</section>
+
+<section id="organizers" class="page">
+  <h1 class="title">Organizers</h1><p class="subtitle">Organizer details</p>
+  <div class="panel"><table><thead><tr><th>ID</th><th>Organizer</th><th>Department</th><th>Contact</th></tr></thead>
+  <tbody id="organizerBody"></tbody></table></div>
+</section>
+
+<section id="events" class="page">
+  <h1 class="title">Events</h1><p class="subtitle">College events stored in the Event table</p>
+  <div class="panel"><table><thead><tr><th>ID</th><th>Event Name</th><th>Date</th><th>Venue</th><th>Organizer ID</th><th>Max Seats</th></tr></thead>
+  <tbody id="eventBody"></tbody></table></div>
+</section>
+
+<section id="registrations" class="page">
+  <h1 class="title">Registrations</h1><p class="subtitle">Student event registration information</p>
+  <div class="panel"><table><thead><tr><th>Registration ID</th><th>Student</th><th>Event</th><th>Registration Date</th></tr></thead>
+  <tbody id="registrationBody"></tbody></table></div>
+</section>
+
+<section id="attendance" class="page">
+  <h1 class="title">Attendance</h1><p class="subtitle">Attendance generated from registrations</p>
+  <div class="panel"><table><thead><tr><th>Attendance ID</th><th>Registration ID</th><th>Status</th></tr></thead>
+  <tbody id="attendanceBody"></tbody></table></div>
+</section>
+
+<section id="crud" class="page">
+  <h1 class="title">Student CRUD Operations</h1>
+  <p class="subtitle">Frontend demonstration of Create, Read, Update and Delete</p>
+  <div class="notice">The PDF demonstrates CRUD using Student_ID 106, Karan Mehta. The buttons below simulate those database operations in the browser.</div>
+
+  <div class="panel">
+    <h2>Create / Update Student</h2>
+    <div class="form-grid">
+      <div><label>Student ID</label><input id="sid" type="number" placeholder="106"></div>
+      <div><label>Student Name</label><input id="sname" placeholder="Karan Mehta"></div>
+      <div><label>Branch</label><select id="branch"><option>IT</option><option>CSE</option><option>ENTC</option></select></div>
+      <div><label>Year</label><input id="syear" type="number" placeholder="2"></div>
+      <div><label>Email</label><input id="semail" type="email" placeholder="karan@gmail.com"></div>
+    </div>
+    <div class="actions">
+      <button class="btn primary" onclick="createStudent()">CREATE</button>
+      <button class="btn success" onclick="updateStudent()">UPDATE</button>
+      <button class="btn secondary" onclick="clearForm()">CLEAR</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>READ — Student Table</h2>
+    <table><thead><tr><th>ID</th><th>Name</th><th>Branch</th><th>Year</th><th>Email</th><th>Action</th></tr></thead>
+    <tbody id="crudBody"></tbody></table>
+  </div>
+</section>
+
+<footer>College Event Management System • DBMS Mini Project</footer>
+</main>
+</div>
+
+<script>
+let students=[
+{id:101,name:"Amit Sharma",branch:"IT",year:2,email:"amit.sharma@gmail.com"},
+{id:102,name:"Rahul Patil",branch:"CSE",year:2,email:"rahul@gmail.com"},
+{id:103,name:"Priya Singh",branch:"IT",year:3,email:"priya@gmail.com"},
+{id:104,name:"Sneha Joshi",branch:"ENTC",year:2,email:"sneha@gmail.com"},
+{id:105,name:"Rohan Verma",branch:"CSE",year:3,email:"rohan@gmail.com"}
+];
+
+const organizers=[
+{id:1,name:"Tech Club",dept:"Information Technology",contact:"9876543210"},
+{id:2,name:"Cultural Club",dept:"Arts",contact:"9876543211"},
+{id:3,name:"Sports Club",dept:"Physical Education",contact:"9876543212"}
+];
+
+const events=[
+{id:201,name:"Coding Competition",date:"2026-10-10",venue:"Computer Lab",org:1,seats:50},
+{id:202,name:"Dance Competition",date:"2026-10-15",venue:"Auditorium",org:2,seats:100},
+{id:203,name:"Cricket Tournament",date:"2026-10-20",venue:"College Ground",org:3,seats:80},
+{id:204,name:"Quiz Competition",date:"2026-10-25",venue:"Seminar Hall",org:1,seats:60}
+];
+
+const registrations=[
+{id:301,student:101,event:201,date:"2026-09-20"},
+{id:302,student:102,event:201,date:"2026-09-21"},
+{id:303,student:103,event:202,date:"2026-09-22"},
+{id:304,student:104,event:203,date:"2026-09-23"},
+{id:305,student:105,event:204,date:"2026-09-24"}
+];
+
+let attendance=[
+{id:401,reg:301,status:"Present"},
+{id:402,reg:302,status:"Present"},
+{id:403,reg:303,status:"Absent"},
+{id:404,reg:304,status:"Present"},
+{id:405,reg:305,status:"Present"}
+];
+
+function showPage(id,btn){
+ document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+ document.getElementById(id).classList.add("active");
+ document.querySelectorAll(".sidebar button").forEach(b=>b.classList.remove("active"));
+ btn.classList.add("active");
+}
+
+function render(){
+ document.getElementById("studentBody").innerHTML=students.map(s=>`<tr><td>${s.id}</td><td>${s.name}</td><td>${s.branch}</td><td>${s.year}</td><td>${s.email}</td></tr>`).join("");
+ document.getElementById("crudBody").innerHTML=students.map(s=>`<tr><td>${s.id}</td><td>${s.name}</td><td>${s.branch}</td><td>${s.year}</td><td>${s.email}</td><td><button class="btn secondary" onclick="loadStudent(${s.id})">EDIT</button> <button class="btn danger" onclick="deleteStudent(${s.id})">DELETE</button></td></tr>`).join("");
+ document.getElementById("organizerBody").innerHTML=organizers.map(o=>`<tr><td>${o.id}</td><td>${o.name}</td><td>${o.dept}</td><td>${o.contact}</td></tr>`).join("");
+ document.getElementById("eventBody").innerHTML=events.map(e=>`<tr><td>${e.id}</td><td>${e.name}</td><td>${e.date}</td><td>${e.venue}</td><td>${e.org}</td><td>${e.seats}</td></tr>`).join("");
+ document.getElementById("registrationBody").innerHTML=registrations.map(r=>{
+   const s=students.find(x=>x.id===r.student),e=events.find(x=>x.id===r.event);
+   return `<tr><td>${r.id}</td><td>${s?s.name:r.student}</td><td>${e?e.name:r.event}</td><td>${r.date}</td></tr>`;
+ }).join("");
+ document.getElementById("attendanceBody").innerHTML=attendance.map(a=>`<tr><td>${a.id}</td><td>${a.reg}</td><td><span class="badge ${a.status.toLowerCase()}">${a.status}</span></td></tr>`).join("");
+ document.getElementById("dashboardEvents").innerHTML=events.map(e=>`<tr><td>${e.id}</td><td>${e.name}</td><td>${e.date}</td><td>${e.venue}</td><td>${e.seats}</td></tr>`).join("");
+ document.getElementById("studentCount").textContent=students.length;
+ document.getElementById("eventCount").textContent=events.length;
+ document.getElementById("registrationCount").textContent=registrations.length;
+ document.getElementById("presentCount").textContent=attendance.filter(a=>a.status==="Present").length;
+}
+
+function createStudent(){
+ const s=getForm();
+ if(!s.id||!s.name||!s.email){alert("Please enter Student ID, Name and Email.");return}
+ if(students.some(x=>x.id===s.id)){alert("Student ID already exists.");return}
+ students.push(s); render(); clearForm(); alert("Student created successfully.");
+}
+
+function updateStudent(){
+ const s=getForm(),i=students.findIndex(x=>x.id===s.id);
+ if(i===-1){alert("Student ID not found.");return}
+ students[i]=s; render(); clearForm(); alert("Student updated successfully.");
+}
+
+function deleteStudent(id){
+ if(confirm("Delete Student ID "+id+"?")){
+   students=students.filter(s=>s.id!==id);
+   render();
+ }
+}
+
+function loadStudent(id){
+ const s=students.find(x=>x.id===id);
+ document.getElementById("sid").value=s.id;
+ document.getElementById("sname").value=s.name;
+ document.getElementById("branch").value=s.branch;
+ document.getElementById("syear").value=s.year;
+ document.getElementById("semail").value=s.email;
+}
+
+function getForm(){
+ return {
+  id:Number(document.getElementById("sid").value),
+  name:document.getElementById("sname").value.trim(),
+  branch:document.getElementById("branch").value,
+  year:Number(document.getElementById("syear").value),
+  email:document.getElementById("semail").value.trim()
+ };
+}
+
+function clearForm(){
+ ["sid","sname","syear","semail"].forEach(id=>document.getElementById(id).value="");
+ document.getElementById("branch").value="IT";
+}
+
+function filterTable(tableId,inputId){
+ const q=document.getElementById(inputId).value.toLowerCase();
+ document.querySelectorAll("#"+tableId+" tbody tr").forEach(row=>{
+  row.style.display=row.innerText.toLowerCase().includes(q)?"":"none";
+ });
+}
+
+render();
+</script>
+</body>
+</html>
